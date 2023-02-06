@@ -8,6 +8,10 @@ import ora from 'ora';
 import clipboard from 'clipboardy';
 import inquirer from 'inquirer';
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt';
+import csv from 'csv-write-stream';
+
+
+
 
 const arg = process.argv.find((arg) => arg.startsWith('--settings'));
 let path;
@@ -69,7 +73,7 @@ const availableCommands = [
         value: '!delete-all',
     },
     {
-        name: '!exit - Exit ChatGPT CLI',
+        name: '!exit - Exit VARIS',
         value: '!exit',
     },
 ];
@@ -78,7 +82,22 @@ inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt);
 
 const chatGptClient = new ChatGPTClient(settings.openaiApiKey, settings.chatGptClient, settings.cacheOptions);
 
-console.log(boxen('ChatGPT CLI', { padding: 0.7, margin: 1, borderStyle: 'double', dimBorder: true }));
+console.log(boxen('V.A.R.I.S.', { padding: 0.7, margin: 1, borderStyle: 'double', dimBorder: true }));
+
+function saveConversation(prompt, completion) {
+    let writer = csv({ sendHeaders: false });
+    fs.access('conversation_history.csv', fs.constants.F_OK, (err) => {
+        fs.readFile('conversation_history.csv', 'utf8', (err, data) => {
+            if (err) {
+                console.error(err);
+            } else {
+                writer.pipe(fs.createWriteStream('conversation_history.csv', { flags: 'a' },));
+                writer.write({ prompt, completion });
+                writer.end();
+            }
+        });
+    });
+}
 
 await conversation();
 
@@ -138,9 +157,10 @@ async function onMessage(message) {
     spinner.start();
     try {
         const response = await chatGptClient.sendMessage(message, { conversationId, parentMessageId });
-        clipboard.write(response.response).then(() => {}).catch(() => {});
+        clipboard.write(response.response).then(() => { }).catch(() => { });
         spinner.stop();
         conversationId = response.conversationId;
+        saveConversation(message, response.response);
         parentMessageId = response.messageId;
         await chatGptClient.conversationsCache.set('lastConversation', {
             conversationId,

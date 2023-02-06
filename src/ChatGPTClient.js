@@ -4,7 +4,7 @@ import Keyv from "keyv";
 import { encode as gptEncode } from "gpt-3-encoder";
 
 const CHATGPT_MODEL = "text-chat-davinci-002-20221122";
-
+/* openai api fine_tunes.create -t conversation_history_prepared.jsonl -m davinci:ft-personal-2023-02-06-11-07-48  */
 export default class ChatGPTClient {
     constructor(apiKey, options = {}, cacheOptions = {}) {
         this.apiKey = apiKey;
