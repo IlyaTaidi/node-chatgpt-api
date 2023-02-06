@@ -1,43 +1,35 @@
-import fetch from 'node-fetch';
-import crypto from 'crypto';
-import Keyv from 'keyv';
-import { encode as gptEncode } from 'gpt-3-encoder';
+import fetch from "node-fetch";
+import crypto from "crypto";
+import Keyv from "keyv";
+import { encode as gptEncode } from "gpt-3-encoder";
 
-const CHATGPT_MODEL = 'text-chat-davinci-002-20221122';
+const CHATGPT_MODEL = "text-chat-davinci-002-20221122";
 
 export default class ChatGPTClient {
-    constructor(
-        apiKey,
-        options = {},
-        cacheOptions = {},
-    ) {
+    constructor(apiKey, options = {}, cacheOptions = {}) {
         this.apiKey = apiKey;
-
         this.options = options;
         const modelOptions = options.modelOptions || {};
         this.modelOptions = {
             ...modelOptions,
             // set some good defaults (check for undefined in some cases because they may be 0)
             model: modelOptions.model || CHATGPT_MODEL,
-            temperature: typeof modelOptions.temperature === 'undefined' ? 0.8 : modelOptions.temperature,
-            top_p: typeof modelOptions.top_p === 'undefined' ? 1 : modelOptions.top_p,
-            presence_penalty: typeof modelOptions.presence_penalty === 'undefined' ? 1 : modelOptions.presence_penalty,
-            stop: modelOptions.stop,
+            temperature: typeof modelOptions.temperature === "undefined" ? 0.8 : modelOptions.temperature,
+            top_p: typeof modelOptions.top_p === "undefined" ? 1 : modelOptions.top_p,
+            presence_penalty: typeof modelOptions.presence_penalty === "undefined" ? 1 : modelOptions.presence_penalty,
+            stop: modelOptions.stop
         };
-
-        this.userLabel = this.options.userLabel || 'User';
-        this.chatGptLabel = this.options.chatGptLabel || 'ChatGPT';
-
-        if (this.modelOptions.model.startsWith('text-chat')) {
-            this.endToken = '<|im_end|>';
-            this.separatorToken = '<|im_sep|>';
+        this.userLabel = this.options.userLabel || "User";
+        this.chatGptLabel = this.options.chatGptLabel || "ChatGPT";
+        if (this.modelOptions.model.startsWith("text-chat")) {
+            this.endToken = "<|im_end|>";
+            this.separatorToken = "<|im_sep|>";
         } else {
-            this.endToken = '<|endoftext|>';
+            this.endToken = "<|endoftext|>";
             this.separatorToken = this.endToken;
         }
-
         if (!this.modelOptions.stop) {
-            if (this.modelOptions.model.startsWith('text-chat')) {
+            if (this.modelOptions.model.startsWith("text-chat")) {
                 this.modelOptions.stop = [this.endToken, this.separatorToken];
             } else {
                 this.modelOptions.stop = [this.endToken];
@@ -45,23 +37,21 @@ export default class ChatGPTClient {
             this.modelOptions.stop.push(`\n${this.userLabel}:`);
             // I chose not to do one for `chatGptLabel` because I've never seen it happen
         }
-
-        cacheOptions.namespace = cacheOptions.namespace || 'chatgpt';
+        cacheOptions.namespace = cacheOptions.namespace || "chatgpt";
         this.conversationsCache = new Keyv(cacheOptions);
     }
-
     async getCompletion(prompt) {
         this.modelOptions.prompt = prompt;
         if (this.options.debug) {
             console.debug(this.modelOptions);
         }
-        const response = await fetch('https://api.openai.com/v1/completions', {
-            method: 'POST',
+        const response = await fetch("https://api.openai.com/v1/completions", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${this.apiKey}`,
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${this.apiKey}`
             },
-            body: JSON.stringify(this.modelOptions),
+            body: JSON.stringify(this.modelOptions)
         });
         if (response.status !== 200) {
             const body = await response.text();
@@ -77,59 +67,47 @@ export default class ChatGPTClient {
         return response.json();
     }
 
-    async sendMessage(
-        message,
-        opts = {},
-    ) {
+    async sendMessage(message, opts = {}) {
         const conversationId = opts.conversationId || crypto.randomUUID();
         const parentMessageId = opts.parentMessageId || crypto.randomUUID();
-
         let conversation = await this.conversationsCache.get(conversationId);
         if (!conversation) {
             conversation = {
                 messages: [],
-                createdAt: Date.now(),
+                createdAt: Date.now()
             };
         }
-
         const userMessage = {
             id: crypto.randomUUID(),
             parentMessageId,
-            role: 'User',
-            message,
+            role: "User",
+            message
         };
-
         conversation.messages.push(userMessage);
-
         const prompt = await this.buildPrompt(conversation.messages, userMessage.id);
         const result = await this.getCompletion(prompt);
         if (this.options.debug) {
             console.debug(JSON.stringify(result));
             console.debug();
         }
-
         const reply = result.choices[0].text.trim();
-
         const replyMessage = {
             id: crypto.randomUUID(),
             parentMessageId: userMessage.id,
-            role: 'ChatGPT',
-            message: reply,
+            role: "ChatGPT",
+            message: reply
         };
         conversation.messages.push(replyMessage);
-
         await this.conversationsCache.set(conversationId, conversation);
-
         return {
             response: replyMessage.message,
             conversationId,
-            messageId: replyMessage.id,
+            messageId: replyMessage.id
         };
     }
 
     async buildPrompt(messages, parentMessageId) {
         const orderedMessages = this.constructor.getMessagesForConversation(messages, parentMessageId);
-
         let promptPrefix;
         if (this.options.promptPrefix) {
             promptPrefix = this.options.promptPrefix.trim();
@@ -139,24 +117,20 @@ export default class ChatGPTClient {
             }
             promptPrefix = `\n${this.separatorToken}Instructions:\n${promptPrefix}`;
         } else {
-            const currentDateString = new Date().toLocaleDateString(
-                'en-us',
-                { year: 'numeric', month: 'long', day: 'numeric' },
-            );
-
-            promptPrefix = `\n${this.separatorToken}Instructions:\nYou are ChatGPT, a large language model trained by OpenAI.\nCurrent date: ${currentDateString}${this.separatorToken}\n\n`
+            const currentDateString = new Date().toLocaleDateString("en-us", { year: "numeric", month: "long", day: "numeric" });
+            promptPrefix = `\n${this.separatorToken
+                }Instructions:\nYou are ChatGPT, a large language model trained by OpenAI.\nCurrent date: ${currentDateString}${this.separatorToken
+                }\n\n`;
         }
-
         const promptSuffix = `${this.chatGptLabel}:\n`; // Prompt ChatGPT to respond.
-
         let currentTokenCount = this.getTokenCount(`${promptPrefix}${promptSuffix}`);
-        let promptBody = '';
+        let promptBody = "";
         // I decided to limit conversations to 3097 tokens, leaving 1000 tokens for the response.
         const maxTokenCount = 3097;
         // Iterate backwards through the messages, adding them to the prompt until we reach the max token count.
         while (currentTokenCount < maxTokenCount && orderedMessages.length > 0) {
             const message = orderedMessages.pop();
-            const roleLabel = message.role === 'User' ? this.userLabel : this.chatGptLabel;
+            const roleLabel = message.role === "User" ? this.userLabel : this.chatGptLabel;
             const messageString = `${roleLabel}:\n${message.message}${this.separatorToken}\n`;
             let newPromptBody;
             if (promptBody) {
@@ -182,13 +156,10 @@ export default class ChatGPTClient {
             promptBody = newPromptBody;
             currentTokenCount = newTokenCount;
         }
-
         const prompt = `${promptBody}${promptSuffix}`;
-
         const numTokens = this.getTokenCount(prompt);
         // Use up to 4097 tokens (prompt + response), but try to leave 1000 tokens for the response.
         this.modelOptions.max_tokens = Math.min(4097 - numTokens, 1000);
-
         return prompt;
     }
 
@@ -196,12 +167,11 @@ export default class ChatGPTClient {
         if (this.modelOptions.model === CHATGPT_MODEL) {
             // With this model, "<|im_end|>" and "<|im_sep|>" is 1 token, but tokenizers aren't aware of it yet.
             // Replace it with "<|endoftext|>" (which it does know about) so that the tokenizer can count it as 1 token.
-            text = text.replace(/<\|im_end\|>/g, '<|endoftext|>');
-            text = text.replace(/<\|im_sep\|>/g, '<|endoftext|>');
+            text = text.replace(/<\|im_end\|>/g, "<|endoftext|>");
+            text = text.replace(/<\|im_sep\|>/g, "<|endoftext|>");
         }
         return gptEncode(text).length;
     }
-
     /**
      * Iterate through messages, building an array based on the parentMessageId.
      * Each message has an id and a parentMessageId. The parentMessageId is the id of the message that this message is a reply to.
@@ -213,14 +183,13 @@ export default class ChatGPTClient {
         const orderedMessages = [];
         let currentMessageId = parentMessageId;
         while (currentMessageId) {
-            const message = messages.find((m) => m.id === currentMessageId);
+            const message = messages.find(m => m.id === currentMessageId);
             if (!message) {
                 break;
             }
             orderedMessages.unshift(message);
             currentMessageId = message.parentMessageId;
         }
-
         return orderedMessages;
     }
 }
