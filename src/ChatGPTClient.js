@@ -130,7 +130,7 @@ export default class ChatGPTClient {
         let currentTokenCount = this.getTokenCount(`${promptPrefix}${promptSuffix}`);
         let promptBody = "";
         // I decided to limit conversations to 3097 tokens, leaving 1000 tokens for the response.
-        const maxTokenCount = 2049;
+        const maxTokenCount = 3097;
         // Iterate backwards through the messages, adding them to the prompt until we reach the max token count.
         while (currentTokenCount < maxTokenCount && orderedMessages.length > 0) {
             const message = orderedMessages.pop();
@@ -163,7 +163,7 @@ export default class ChatGPTClient {
         const prompt = `${promptBody}${promptSuffix}`;
         const numTokens = this.getTokenCount(prompt);
         // Use up to 4097 tokens (prompt + response), but try to leave 1000 tokens for the response.
-        this.modelOptions.max_tokens = Math.min(2049 - numTokens, 500);
+        this.modelOptions.max_tokens = Math.min(4097 - numTokens, 1000);
         return prompt;
     }
 
