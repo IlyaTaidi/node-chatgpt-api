@@ -3,8 +3,12 @@ import crypto from "crypto";
 import Keyv from "keyv";
 import { encode as gptEncode } from "gpt-3-encoder";
 
-const CHATGPT_MODEL = "text-chat-davinci-002-20221122";
-/* openai api fine_tunes.create -t conversation_history_prepared.jsonl -m davinci:ft-personal-2023-02-06-11-07-48  */
+/* 
+export OPENAI_API_KEY="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"
+openai api fine_tunes.create -t eli5.jsonl -m davinci:ft-personal:varis-v-0-3-2023-02-06-16-34-42 --suffix "VARIS.v.0.4"
+ */
+
+const CHATGPT_MODEL = "davinci:ft-personal:varis-v-0-3-2023-02-06-16-34-42";
 export default class ChatGPTClient {
     constructor(apiKey, options = {}, cacheOptions = {}) {
         this.apiKey = apiKey;
@@ -126,7 +130,7 @@ export default class ChatGPTClient {
         let currentTokenCount = this.getTokenCount(`${promptPrefix}${promptSuffix}`);
         let promptBody = "";
         // I decided to limit conversations to 3097 tokens, leaving 1000 tokens for the response.
-        const maxTokenCount = 3097;
+        const maxTokenCount = 2049;
         // Iterate backwards through the messages, adding them to the prompt until we reach the max token count.
         while (currentTokenCount < maxTokenCount && orderedMessages.length > 0) {
             const message = orderedMessages.pop();
@@ -159,7 +163,7 @@ export default class ChatGPTClient {
         const prompt = `${promptBody}${promptSuffix}`;
         const numTokens = this.getTokenCount(prompt);
         // Use up to 4097 tokens (prompt + response), but try to leave 1000 tokens for the response.
-        this.modelOptions.max_tokens = Math.min(4097 - numTokens, 1000);
+        this.modelOptions.max_tokens = Math.min(2049 - numTokens, 500);
         return prompt;
     }
 
