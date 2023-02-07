@@ -1,8 +1,8 @@
 export default {
     // Your OpenAI API key
-    /*export OPENAI_API_KEY="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" 
+    /*export OPENAI_API_KEY="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" 
     organization: "org-uSYl6hNHnet0yTUtwVQCcAkP"*/
-    openaiApiKey: "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",
+    openaiApiKey: "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",
     chatGptClient: {
         // (Optional) Parameters as described in https://platform.openai.com/docs/api-reference/completions
         modelOptions: {

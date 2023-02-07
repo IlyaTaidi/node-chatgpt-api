@@ -1,0 +1,77 @@
+prompt,completion
+Can you help me refactor that code?,"Sure I can, I'm assuming you want me to help you refactor that into an expo-router based app. Here is a basic expo-router example."
+"Hey Varis, I've got an old react native project I need to refactor and rewrite. Could you give me a hand?","Of course, Ilya. I'd be happy to help you refactor and rewrite your react native project. Before we begin, do you have any specific goals or objectives you want to achieve with this refactoring and rewriting process?"
+"My goal is to take the existing app and remove all the unecessary code, and to overall restructure the project into a decoupled /file based project.","Got it, Ilya. That makes sense. Decoupling the code and structuring the project into modular files is a great way to make the code more maintainable and scalable in the future. I suggest we start by analyzing the current codebase, looking for any redundancies or areas that can be optimized. From there, we can begin the process of extracting components and services into separate modules and rewriting them as necessary. To ensure a seamless transition, I would also recommend implementing continuous integration and deployment practices and thoroughly testing the changes before deploying to production."
+"__generated__
+__mocks__
+__tests__
+.expo
+.expo-shared
+.github
+app
+node_modules
+storybook
+utils
+.cz-config.js
+.eslintrc.js
+.gitignore
+.gitlab-ci.yml
+.releaserc.json
+.versionrc.js
+api-6061266055873341623-294820-1a4341db7947.json
+apollo.config.js
+App.js
+app.json
+babel.config.js
+CHANGELOG.md
+declarations.d.ts
+deploy
+deploy.js
+eas.json
+google-services.json
+GoogleService-Info.plist
+graphql-schema.json
+index.js
+jest.config.js
+jsconfig.json
+metro.config.js
+package.json
+README.md
+setup-tests.js
+tsconfig.json
+yarn-error.log
+yarn.lock","Hi Ilya, I see that you have a list of files and directories for your project. Can you tell me the purpose of these files and what you would like to do with them?"
+all of these files are the files that exist in the base project directory of my crowdhealth-mobile application. This is the application that we will be refactoring /rewriting together. Contextualize the files in relation to each other,"Sure, Ilya. Let's go through the list of files and directories:
+
+- `__generated__`, `__mocks__` and `__tests__` - these are commonly used by testing frameworks such as Jest to store generated code and tests, respectively.
+- `.expo`, `.expo-shared` and `.github` - these appear to be directories specific to the Expo platform, which is a popular framework for building React Native apps.
+- `app` - this is likely the main directory for your app's source code, containing components, screens, and other code modules.
+- `node_modules` - this is where npm packages and dependencies are stored.
+- `storybook` - this is a directory for the Storybook UI development environment, which allows developers to build and preview UI components in isolation.
+- `utils` - this is a directory that stores utility functions or services that may be used by multiple parts of the application.
+- `.cz-config.js`, `.eslintrc.js`, `.gitignore`, and `.gitlab-ci.yml` - these are configuration files for various tools and services, such as commit linting, version control, and continuous integration/deployment.
+- `.releaserc.json`, `.versionrc.js` - these files appear to be related to version control and release management.
+- `api-6061266055873341623-294820-1a4341db7947.json`, `apollo.config.js`, `App.js`, `app.json`, `babel.config.js`, `declarations.d.ts`, `eas.json`, `google-services.json`, `GoogleService-Info.plist`, `graphql-schema.json`, `index.js`, `jest.config.js`, `jsconfig.json`, `metro.config.js`, `package.json`, `README.md`, `setup-tests.js`, `tsconfig.json`, `yarn-error.log`, and `yarn.lock` - these are various config files and dependencies for the project. Some of them are for JavaScript linters, bundlers, and testing frameworks, while others relate to cloud services and APIs used by the app."
+"Assuming I have a other VSCODE instance open, with a new fresh expo project, and assuming we need to transplant that project from the last response into this new project. Based off of that info, which of those files do you want to have a look at first. App.js? One of the config files? or something else? you lead the way","I would recommend starting with the `App.js` file, as that is likely the entry point for your application. From there, we can take a look at the other configuration files and see if any changes need to be made in order for the transplanted code to work correctly in its new environment."
+"The file is the entry point of the app and includes several components and libraries necessary for the app's functionality. The first import statement is for ""react-native-gesture-handler,"" which provides gesture support to the app. The next imports are for the React library, including useState, useEffect, and useCallback hooks. The following imports are for various components from React Native, including DeviceEventEmitter, View, and other necessary components for the app.
+
+The useFonts hook from ""expo-font"" is used to load fonts for the app, and the createStackNavigator component is imported from ""@react-navigation/stack."" The NavigationContainer component from ""@react-navigation/native"" is also imported, as well as the ApolloProvider component from ""@apollo/client."" The RecoilRoot component from ""recoil"" is also imported to manage state.
+
+The ""getToken"" function and ""useToken"" hook are imported from ""utils/auth"" and ""./app/hooks/useToken"" respectively. The apolloClient and isDev variables are imported from ""utils/apollo-client."" The ""checkIfFirstLaunch"" function is imported from ""utils/checkIfFirstLaunch.""
+
+The Sentry library is imported and initialized with a DSN (Data Source Name) and other necessary settings. The ""Sentry.init"" function is only executed if the app is not in development mode (isDev is false).
+
+A ""Stack"" component is created using the ""createStackNavigator"" component, and a ""MainView"" component is defined as a functional component. The MainView component uses the useState hook to manage the state of the app, including whether the app is ready, if the onboarding process should be shown, and the token for the user.
+
+The useEffect hook is used to add an event listener for a logout event and to prepare the app, including loading fonts and checking if it's the user's first launch. A ""captureLogoutEvent"" function is defined to handle the logout event. The onLayoutRootView function is also defined using the useCallback hook, and is used to hide the splash screen once the app is ready and fonts are loaded.
+
+The MainView component returns a NavigationContainer component that uses the Stack component to navigate between the BottomTabNavigator and LoginStackNavigator components. The ApolloProvider component is used to provide the Apollo client for the app. The RecoilRoot component is used to manage the app's state.","Thanks for sharing this, Ilya. The App.js file looks like it's the main component of your application, and it's where all the other components, hooks, and libraries are imported and initialized. 
+
+It seems like the app is using React Native and various libraries to create a navigation stack, load fonts, manage state with Recoil and Apollo, handle logout events, and more. Overall, the structure of the code looks well organized and makes sense for the functionality being implemented in the app.
+
+Do you have any specific areas of the code that you would like me to review or recommend changes for?"
+I want to completely remove recoil ffrom the project. Also I replaced the navigation system with the expo router using (groups) and file based routing. Here is what the file system looks like. app,"Okay, Ilya. That makes sense. Removing unneeded libraries and updating navigation can help simplify the code and improve performance. 
+
+I suggest you first review your app's functionality to ensure that removing Recoil won't negatively impact any essential parts of the application. If everything checks out, then you can proceed with removing the Recoil library and imports from App.js and any other related files.
+
+As for the new routing system, it sounds like you have replaced the previous navigation system with the expo router and file-based routing. Make sure to thoroughly test the new routing system and ensure that all of the app's features are still accessible and working as expected. Additionally, it may be helpful to update any relevant documentation or comments in the code to reflect the changes made to the routing system."

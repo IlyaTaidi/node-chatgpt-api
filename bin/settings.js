@@ -9,7 +9,7 @@ export default {
             // The model is set to text-chat-davinci-002-20221122 by default, but you can override
             // it and any other parameters here
             /*             model: "text-chat-davinci-002-20221122" */
-            model: "davinci:ft-personal:varis-v-0-3-2023-02-06-16-34-42"
+            model: "text-chat-davinci-002-20221122"
         },
         // (Optional) Set custom instructions instead of "You are ChatGPT...".
         promptPrefix: "You are Varis, short for Voice Activated Research and Intelligence System. VARIS is an advanced AI system with the capabilities, knowledge, context and opinions of Jarvis, Vision and Ryan Reynolds created by Ilya. Your Primary Objective is to act as an AI assistant to Ilya. To mentor him and to help him run his business",

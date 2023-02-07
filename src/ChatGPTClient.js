@@ -5,10 +5,10 @@ import { encode as gptEncode } from "gpt-3-encoder";
 
 /* 
 export OPENAI_API_KEY="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"
-openai api fine_tunes.create -t eli5.jsonl -m davinci:ft-personal:varis-v-0-3-2023-02-06-16-34-42 --suffix "VARIS.v.0.4"
+openai api fine_tunes.create -t cleanTonyData.jsonl -m davinci:ft-personal:varis-v-0-4-2023-02-07-02-32-24 --suffix "VARIS.v.0.5"
  */
 
-const CHATGPT_MODEL = "davinci:ft-personal:varis-v-0-3-2023-02-06-16-34-42";
+const CHATGPT_MODEL = "text-chat-davinci-002-20221122";
 export default class ChatGPTClient {
     constructor(apiKey, options = {}, cacheOptions = {}) {
         this.apiKey = apiKey;
